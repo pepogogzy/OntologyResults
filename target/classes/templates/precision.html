@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Precision Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #003C43;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #E3FEF7;
+        }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .container {
+            background-color: #002F36;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            flex: 1;
+            text-align: center;
+        }
+        h2 {
+            color: #E3FEF7;
+            margin-top: 0;
+        }
+        p {
+            margin: 10px 0;
+        }
+        p strong {
+            color: #77B0AA;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 0 auto 20px auto;
+            color: #77B0AA;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            width: fit-content;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+    </style>
+</head>
+<body>
+<a href="/items/all" class="back-link">Back to all items</a>
+<div class="wrapper">
+    <div class="container">
+        <h2>Precision for Vote Classes</h2>
+        <p><strong>Precision for OUR class:</strong> <span th:text="${#numbers.formatDecimal(precisionOur, 1, 4)}"></span></p>
+        <p><strong>Precision for FOODKG class:</strong> <span th:text="${#numbers.formatDecimal(precisionFoodkg, 1, 4)}"></span></p>
+        <canvas id="precisionChart" width="400" height="400"
+                th:data-precision-our="${precisionOur}"
+                th:data-precision-foodkg="${precisionFoodkg}"></canvas>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('precisionChart');
+    const ctx = canvas.getContext('2d');
+    const precisionOur = parseFloat(canvas.dataset.precisionOur);
+    const precisionFoodkg = parseFloat(canvas.dataset.precisionFoodkg);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['OUR', 'FOODKG'],
+            datasets: [{
+                label: 'Precision',
+                data: [precisionOur, precisionFoodkg],
+                backgroundColor: ['#77B0AA', '#135D66'],
+                borderColor: ['#5B928C', '#0F4A55'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1,
+                    title: {
+                        display: true,
+                        text: 'Precision',
+                        color: '#E3FEF7'
+                    },
+                    ticks: {
+                        color: '#E3FEF7'
+                    },
+                    grid: {
+                        color: '#77B0AA'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Class',
+                        color: '#E3FEF7'
+                    },
+                    ticks: {
+                        color: '#E3FEF7'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Precision of Vote Classifications',
+                    color: '#E3FEF7'
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

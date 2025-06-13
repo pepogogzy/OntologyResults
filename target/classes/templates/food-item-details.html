@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Food Item Details</title>
+    <style>
+        body {
+            background-color: #003C43;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #E3FEF7;
+        }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Ensures boxes start at top */
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .boxes {
+            display: flex;
+            flex-direction: column; /* Place containers side-by-side */
+            align-items: flex-start; /* Align them to the top */
+            gap: 20px; /* Add small gap between the two containers */
+        }
+
+        .container {
+            background-color: #002F36;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            width: 600px; /* Consistent width */
+            max-height: none; /* Remove max-height so it can shrink to fit */
+            flex: 1; /* Equal width among siblings if they share space */
+        }
+        .chart-container {
+            width: 450px;
+            height: 450px;
+            flex: 0 0 600px;
+        }
+        h1 {
+            color: #E3FEF7;
+            margin-top: 0;
+        }
+        .error {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        .detail {
+            margin: 10px 0;
+        }
+        .detail strong {
+            color: #77B0AA;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 0 auto 20px auto;
+            color: #77B0AA;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            width: fit-content;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .vote-item {
+            margin-left: 2vw;
+        }
+        .vote-form {
+            margin-top: 20px;
+        }
+        .vote-form label {
+            display: block;
+            margin: 10px 0;
+            color: #E3FEF7;
+        }
+        .vote-form input[type="radio"] {
+            margin-right: 10px;
+        }
+        .vote-form button {
+            display: inline-block;
+            margin-top: 20px;
+            color: #77B0AA;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            background: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .vote-form button:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .vote-message {
+            margin: 10px 0;
+            color: #E3FEF7;
+        }
+        .vote-message strong {
+            color: #77B0AA;
+        }
+    </style>
+</head>
+<body>
+<a href="/items/all" class="back-link">Back to all items</a>
+<div class="wrapper">
+    <div class="boxes">
+        <div class="container">
+            <h1>Food Item Details</h1>
+            <div th:if="${error}" class="error">
+                <p th:text="${error}"></p>
+            </div>
+            <div th:if="${foodItem}">
+                <div class="detail"><strong>ID:</strong> <span th:text="${foodItem.id}"></span></div>
+                <div class="detail"><strong>Name:</strong> <span th:text="${foodItem.name}"></span></div>
+                <div class="detail"><strong>Our USDA Class:</strong> <span th:text="${foodItem.ourClass}"></span></div>
+                <div class="detail"><strong>FoodKG Class:</strong> <span th:text="${foodItem.foodKGClass}"></span></div>
+                <br>
+                <div class="detail"><strong>Votes By Category:</strong>
+                    <div class="vote-item">NONE: <span th:text="${voteCounts.get(T(mk.ukim.finki.wp.model.VoteType).NONE)}" id="voteNone"></span></div>
+                    <div class="vote-item">OUR: <span th:text="${voteCounts.get(T(mk.ukim.finki.wp.model.VoteType).OUR)}" id="voteOur"></span></div>
+                    <div class="vote-item">FOODKG: <span th:text="${voteCounts.get(T(mk.ukim.finki.wp.model.VoteType).FOODKG)}" id="voteFoodKG"></span></div>
+                    <div class="vote-item">BOTH: <span th:text="${voteCounts.get(T(mk.ukim.finki.wp.model.VoteType).BOTH)}" id="voteBoth"></span></div>
+                </div>
+                <div class="detail"><strong>Total Votes:</strong> <span th:text="${totalVotes}"></span></div>
+            </div>
+        </div>
+
+        <!-- Only visible to EXPERT or ADMIN -->
+        <div class="container" th:if="${foodItem}">
+            <sec:authorize access="hasAnyRole('ROLE_EXPERT', 'ROLE_ADMIN')">
+                <h1>Your Vote</h1>
+                <div th:if="${hasVoted == ''}">
+                    <form th:action="@{/items/{id}/vote(id=${foodItem.id})}" method="post" class="vote-form">
+                        <label><input type="radio" name="voteType" value="NONE" checked> NONE</label>
+                        <label><input type="radio" name="voteType" value="OUR"> OUR</label>
+                        <label><input type="radio" name="voteType" value="FOODKG"> FOODKG</label>
+                        <label><input type="radio" name="voteType" value="BOTH"> BOTH</label>
+                        <button type="submit">Submit Vote</button>
+                    </form>
+                </div>
+                <div th:unless="${hasVoted == ''}" class="vote-message">
+                    <strong>Your Vote:</strong> <span th:text="${hasVoted}"></span>
+                </div>
+            </sec:authorize>
+        </div>
+    </div>
+
+    <div class="chart-container" th:if="${foodItem}">
+        <canvas id="votesPieChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const voteNone = parseInt(document.getElementById('voteNone').textContent) || 0;
+    const voteOur = parseInt(document.getElementById('voteOur').textContent) || 0;
+    const voteFoodKG = parseInt(document.getElementById('voteFoodKG').textContent) || 0;
+    const voteBoth = parseInt(document.getElementById('voteBoth').textContent) || 0;
+
+    const ctx = document.getElementById('votesPieChart');
+    if (ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ['NONE', 'OUR', 'FOODKG', 'BOTH'],
+                datasets: [{
+                    data: [voteNone, voteOur, voteFoodKG, voteBoth],
+                    backgroundColor: ['#6c757d', '#77B0AA', '#FF6B6B', '#ffc107'],
+                    borderColor: ['#E3FEF7', '#E3FEF7', '#E3FEF7', '#E3FEF7'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#E3FEF7'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.raw;
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

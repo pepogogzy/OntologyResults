@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CSV Upload</title>
+    <style>
+        body {
+            background-color: #003C43;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #E3FEF7;
+        }
+        .container {
+            background-color: #002F36;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #E3FEF7;
+            margin-top: 0;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        input[type="file"] {
+            padding: 8px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            background-color: #00171F;
+            color: #E3FEF7;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #77B0AA;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            color: #003C43;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .message {
+            margin-top: 1em;
+            padding: 0.5em;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #004d40;
+            color: #b2dfdb;
+            border: 1px solid #b2dfdb;
+        }
+        .error {
+            background-color: #880e4f;
+            color: #ef9a9a;
+            border: 1px solid #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Upload CSV File</h2>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required />
+        <br>
+        <button type="submit">Upload</button>
+    </form>
+
+    <!-- Display success or error message -->
+    <div th:if="${message}" th:text="${message}"
+         th:classappend="${message.startsWith('Error') ? 'message error' : 'message success'}">
+    </div>
+    <div th:if="${message != null and !#strings.startsWith(message, 'Error')}">
+        <a th:href="@{/items/all}">
+            <button type="button">View All Items</button>
+        </a>
+    </div>
+</div>
+</body>
+</html>

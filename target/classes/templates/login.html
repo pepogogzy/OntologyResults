@@ -1,0 +1,96 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Login</title>
+  <style>
+    body {
+      background-color: #003C43;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #E3FEF7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background-color: #002F36;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      width: 400px; /* Smaller width for login form */
+      text-align: center;
+    }
+    h2 {
+      color: #E3FEF7;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .error {
+      color: #FF6B6B;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .form-signin {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .form-signin label {
+      display: none; /* Hide screen-reader-only labels for consistency */
+    }
+    .form-signin input {
+      padding: 8px;
+      border: 1px solid #77B0AA;
+      border-radius: 4px;
+      background-color: #003C43;
+      color: #E3FEF7;
+      font-size: 16px;
+    }
+    .form-signin input::placeholder {
+      color: #77B0AA;
+    }
+    .form-signin input:focus {
+      outline: none;
+      border-color: #E3FEF7;
+      box-shadow: 0 0 5px rgba(119, 176, 170, 0.5);
+    }
+    .form-signin button, .form-signin a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #77B0AA;
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1px solid #77B0AA;
+      border-radius: 4px;
+      background: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 16px;
+    }
+    .form-signin button:hover, .form-signin a:hover {
+      background-color: #135D66;
+      color: #E3FEF7;
+    }
+  </style>
+</head>
+<body>
+<div class="container" xmlns:th="http://www.thymeleaf.org">
+  <form class="form-signin" method="post" action="/login">
+    <h2>Sign in</h2>
+    <div th:if="${param.error}" class="error" th:text="${param.error}"></div>
+    <div>
+      <label for="username" class="sr-only">Username</label>
+      <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+    </div>
+    <div>
+      <label for="password" class="sr-only">Password</label>
+      <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+    </div>
+    <button id="submit" type="submit">Sign in</button>
+    <a href="/register">Don't have an account? Register here!</a>
+  </form>
+</div>
+</body>
+</html>

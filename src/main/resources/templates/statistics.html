@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Precision Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #003C43;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #E3FEF7;
+        }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .container {
+            background-color: #002F36;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            flex: 1;
+            text-align: center;
+        }
+        h2 {
+            color: #E3FEF7;
+            margin-top: 0;
+        }
+        p {
+            margin: 10px 0;
+            text-align: left;
+        }
+        p strong {
+            color: #77B0AA;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 0 auto 20px auto;
+            color: #77B0AA;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            width: fit-content;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .debug {
+            color: #FF5733;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<a href="/items/all" class="back-link">Back to all items</a>
+<div class="wrapper">
+    <div class="container">
+        <h2>Precision and Positives for Vote Classes</h2>
+        <p><strong>Precision for OUR class:</strong> <span th:text="${#numbers.formatDecimal(precision['OUR'], 1, 4)}"></span></p>
+        <p><strong>Precision for FOODKG class:</strong> <span th:text="${#numbers.formatDecimal(precision['FOODKG'], 1, 4)}"></span></p>
+        <p><strong>True Positives for OUR:</strong> <span th:text="${tpfp['TP_OUR'] ?: 0}"></span></p>
+        <p><strong>False Positives for OUR:</strong> <span th:text="${tpfp['FP_OUR'] ?: 0}"></span></p>
+        <p><strong>True Positives for FOODKG:</strong> <span th:text="${tpfp['TP_FOODKG'] ?: 0}"></span></p>
+        <p><strong>False Positives for FOODKG:</strong> <span th:text="${tpfp['FP_FOODKG'] ?: 0}"></span></p>
+        <canvas id="precisionChart" width="400" height="400"
+                th:data-precision-our="${precision['OUR']}"
+                th:data-precision-foodkg="${precision['FOODKG']}"></canvas>
+    </div>
+    <div class="container">
+        <h2>Comparative Analysis of Evaluation Results</h2>
+        <canvas id="distributionChart" width="400" height="400"
+                th:data-our="${distribution['OUR']}"
+                th:data-both="${distribution['BOTH']}"
+                th:data-none="${distribution['NONE']}"
+                th:data-foodkg="${distribution['FOODKG']}"></canvas>
+    </div>
+</div>
+
+<script>
+    // Precision Chart
+    const precisionCanvas = document.getElementById('precisionChart');
+    const precisionCtx = precisionCanvas.getContext('2d');
+    const precisionOur = parseFloat(precisionCanvas.dataset.precisionOur) || 0;
+    const precisionFoodkg = parseFloat(precisionCanvas.dataset.precisionFoodkg) || 0;
+
+    new Chart(precisionCtx, {
+        type: 'bar',
+        data: {
+            labels: ['OUR', 'FOODKG'],
+            datasets: [{
+                label: 'Precision',
+                data: [precisionOur, precisionFoodkg],
+                backgroundColor: ['#77B0AA', '#135D66'],
+                borderColor: ['#5B928C', '#0F4A55'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1,
+                    title: {
+                        display: true,
+                        text: 'Precision',
+                        color: '#E3FEF7'
+                    },
+                    ticks: {
+                        color: '#E3FEF7'
+                    },
+                    grid: {
+                        color: '#77B0AA'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Class',
+                        color: '#E3FEF7'
+                    },
+                    ticks: {
+                        color: '#E3FEF7'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Precision of Vote Classifications',
+                    color: '#E3FEF7'
+                }
+            }
+        }
+    });
+
+    // Distribution Chart
+    const distributionCanvas = document.getElementById('distributionChart');
+    const distributionCtx = distributionCanvas.getContext('2d');
+    const ourPercent = parseFloat(distributionCanvas.dataset.our) / 100 || 0;
+    const bothPercent = parseFloat(distributionCanvas.dataset.both) / 100 || 0;
+    const nonePercent = parseFloat(distributionCanvas.dataset.none) / 100 || 0;
+    const foodkgPercent = parseFloat(distributionCanvas.dataset.foodkg) / 100 || 0;
+
+    new Chart(distributionCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Our\'s', 'Both', 'None', 'FoodKG\'s'],
+            datasets: [{
+                label: 'Percentage (%)',
+                data: [ourPercent, bothPercent, nonePercent, foodkgPercent],
+                backgroundColor: ['#45A3D9', '#3093F3', '#135D66', '#0A2F49'],
+                borderColor: ['#3486B3', '#2673CC', '#0F4A55', '#08213A'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1,
+                    title: {
+                        display: true,
+                        text: 'Percentage (%)',
+                        color: '#E3FEF7'
+                    },
+                    ticks: {
+                        color: '#E3FEF7',
+                        callback: function(value) {
+                            return (value * 100).toFixed(0) + '%';
+                        }
+                    },
+                    grid: {
+                        color: '#77B0AA'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Category',
+                        color: '#E3FEF7'
+                    },
+                    ticks: {
+                        color: '#E3FEF7'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Comparative Analysis of Evaluation Results',
+                    color: '#E3FEF7'
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

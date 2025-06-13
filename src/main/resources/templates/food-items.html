@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Food Science</title>
+    <style>
+        body {
+            background-color: #003C43;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #E3FEF7;
+        }
+        .container {
+            background-color: #002F36;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #E3FEF7;
+            margin-top: 0;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            background-color: #00171F;
+            color: #E3FEF7;
+        }
+        .search-bar input[type="submit"] {
+            background-color: #77B0AA;
+            color: #E3FEF7;
+            cursor: pointer;
+        }
+        .search-bar input[type="submit"]:hover {
+            background-color: #135D66;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #00171F;
+        }
+        th {
+            background-color: #77B0AA;
+            color: #003C43;
+            padding: 10px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #135D66;
+            color: #E3FEF7;
+        }
+        tr:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .td-container{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #77B0AA;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #E3FEF7;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 0 auto 20px auto;
+            color: #77B0AA;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            width: fit-content;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .btn-row {
+            display: flex;
+            flex-direction: row;
+            gap: 1vw;
+        }
+        .vote-button {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 4px 8px;
+            color: #77B0AA;
+            border: 1px solid #77B0AA;
+            border-radius: 4px;
+            background: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+            text-align: center;
+        }
+        .vote-button:hover {
+            background-color: #135D66;
+            color: #E3FEF7;
+        }
+        .vote-form {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Food Science</h1>
+        <div class="btn-row">
+            <div sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a href="/upload" class="back-link">Go to upload</a>
+            </div>
+            <a href="/items/statistics" class="back-link">Statistics</a>
+            <div sec:authorize="isAuthenticated()">
+                <a href="/logout" class="back-link">Logout</a>
+            </div>
+            <div sec:authorize="!isAuthenticated()">
+                <a href="/login" class="back-link">Login</a>
+            </div>
+            <div class="search-bar">
+                <form th:action="@{/items/all}" method="get">
+                    <input type="text" name="searchTerm" placeholder="Search by name" th:value="${searchTerm}" />
+                    <input type="submit" value="Search" style="padding: 8px; border: 1px solid #77B0AA; border-radius: 4px; background-color: #77B0AA; color: #E3FEF7; cursor: pointer;" onmouseover="this.style.backgroundColor='#135D66'" onmouseout="this.style.backgroundColor='#77B0AA'" />
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Our USDA Class Name</th>
+            <th>FoodKG USDA Class Name</th>
+            <th>Votes: NONE</th>
+            <th>Votes: OUR</th>
+            <th>Votes: THEIR</th>
+            <th>Votes: BOTH</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${foodItems}" th:data-item-id="${item.id}">
+            <td><a th:href="@{/items/{id}(id=${item.id})}" th:text="${item.name}"></a></td>
+            <td th:text="${item.ourClass}"></td>
+            <td th:text="${item.foodKGClass}"></td>
+            <td>
+                <div class="td-container">
+                    <span th:text="${voteCounts[item.id]?.get(T(mk.ukim.finki.wp.model.VoteType).NONE) ?: 0}"></span>
+                    <div th:if="${hasVoted != null and hasVoted[item.id] == ''}">
+                        <sec:authorize access="hasAnyRole('ROLE_EXPERT', 'ROLE_ADMIN')">
+                            <form th:action="@{/items/{id}/allVote(id=${item.id})}" method="post" class="vote-form">
+                                <input type="hidden" name="voteType" value="NONE" />
+                                <button type="submit" class="vote-button">+</button>
+                            </form>
+                        </sec:authorize>
+                    </div>
+                </div>
+
+            </td>
+            <td>
+                <div class="td-container">
+                    <span th:text="${voteCounts[item.id]?.get(T(mk.ukim.finki.wp.model.VoteType).OUR) ?: 0}"></span>
+                    <div th:if="${hasVoted != null and hasVoted[item.id] == ''}">
+                        <sec:authorize access="hasAnyRole('ROLE_EXPERT', 'ROLE_ADMIN')">
+                            <form th:action="@{/items/{id}/allVote(id=${item.id})}" method="post" class="vote-form">
+                                <input type="hidden" name="voteType" value="OUR" />
+                                <button type="submit" class="vote-button">+</button>
+                            </form>
+                        </sec:authorize>
+                    </div>
+                </div>
+
+            </td>
+            <td>
+                <div class="td-container">
+                    <span th:text="${voteCounts[item.id]?.get(T(mk.ukim.finki.wp.model.VoteType).FOODKG) ?: 0}"></span>
+                    <div th:if="${hasVoted != null and hasVoted[item.id] == ''}">
+                        <sec:authorize access="hasAnyRole('ROLE_EXPERT', 'ROLE_ADMIN')">
+                            <form th:action="@{/items/{id}/allVote(id=${item.id})}" method="post" class="vote-form">
+                                <input type="hidden" name="voteType" value="FOODKG" />
+                                <button type="submit" class="vote-button">+</button>
+                            </form>
+                        </sec:authorize>
+                    </div>
+                </div>
+
+            </td>
+            <td>
+                <div class="td-container">
+                    <span th:text="${voteCounts[item.id]?.get(T(mk.ukim.finki.wp.model.VoteType).BOTH) ?: 0}"></span>
+                    <div th:if="${hasVoted != null and hasVoted[item.id] == ''}">
+                        <sec:authorize access="hasAnyRole('ROLE_EXPERT', 'ROLE_ADMIN')">
+                            <form th:action="@{/items/{id}/allVote(id=${item.id})}" method="post" class="vote-form">
+                                <input type="hidden" name="voteType" value="BOTH" />
+                                <button type="submit" class="vote-button">+</button>
+                            </form>
+                        </sec:authorize>
+                    </div>
+                </div>
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
