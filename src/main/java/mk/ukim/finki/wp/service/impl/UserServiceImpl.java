@@ -23,17 +23,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(String username, String password, String repeatPassword, String name, String surname, Role role) {
-        /*if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
-            throw new InvalidArgumentsException();
-        }
-
-        if (!password.equals(repeatPassword)) {
-            throw new PasswordsDoNotMatchException();
-        }
-
-        if (this.userRepository.findByUsername(username).isPresent()) {
-            throw new UsernameAlreadyExistsException(username);
-        }*/
 
         User user = new User(username, passwordEncoder.encode(password), name, surname, role);
 
@@ -52,9 +41,9 @@ public class UserServiceImpl implements UserService {
 
     @PostConstruct
     public void initUsers() {
-        register("admin",  "admin", "admin", "admin", "admin", Role.ROLE_ADMIN);
-        register("user",  "user", "user", "user", "user", Role.ROLE_USER);
-        register("expert",  "expert", "expert", "expert", "expert", Role.ROLE_EXPERT);
+        register("jana.stoichkova",  "bono.123", "bono.123", "Jana", "Stoichkova", Role.ROLE_ADMIN);
+        register("petar.gogovski",  "medo.123", "medo.123", "Petar", "Gogovski", Role.ROLE_USER);
+        register("dimitri.stojanovski",  "dolly.123", "dolly.123", "Dimitri", "Stojanovski", Role.ROLE_EXPERT);
     }
 }
 
